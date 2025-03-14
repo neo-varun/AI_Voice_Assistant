@@ -101,3 +101,162 @@ body {
   animation: rotateExpanded 8s linear infinite !important;
   box-shadow: 0 0 20px 5px rgba(76, 175, 80, 0.7) !important; /* Green glow */
 }
+
+/* Options Toggle Button */
+.options-toggle {
+  margin-top: 30px;
+  background-color: rgba(165, 137, 98, 0.9);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+  min-width: 200px;
+}
+
+.options-toggle:hover {
+  background-color: rgba(141, 117, 83, 0.95);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.options-toggle:active {
+  transform: translateY(1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
+
+.options-toggle .toggle-icon {
+  fill: white;
+  transition: transform 0.3s ease;
+}
+
+.options-toggle.active .toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* Options Container */
+.options-container {
+  margin-top: 15px;
+  background-color: rgba(255, 255, 255, 0.7);
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease-in-out;
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.options-container.visible {
+  max-height: 800px;
+  opacity: 1;
+}
+
+/* Option Group */
+.option-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Labels */
+.option-group label {
+  font-weight: 600;
+  color: #333;
+  font-size: 15px;
+  margin-left: 2px;
+}
+
+/* Dropdown styling */
+.dropdown {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background-color: rgba(242, 232, 213, 0.7); /* Semi-transparent version of the page background */
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23333%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px top 50%;
+  background-size: 12px auto;
+  padding-right: 30px;
+}
+
+.dropdown:hover {
+  border-color: rgba(215, 46, 46, 0.4);
+  background-color: rgba(242, 232, 213, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown:focus {
+  outline: none;
+  border-color: #d72e2e;
+  box-shadow: 0 0 0 2px rgba(215, 46, 46, 0.2), 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dropdown options styling */
+.dropdown option {
+  padding: 10px;
+  background-color: rgba(242, 232, 213, 0.95);
+  color: #333;
+}
+
+.dropdown option:hover,
+.dropdown option:focus {
+  background-color: rgba(215, 46, 46, 0.1);
+}
+
+/* Styling for disabled options and category headers */
+.dropdown option[disabled] {
+  color: #888;
+  font-style: italic;
+}
+
+/* Option categories within dropdowns */
+.option-category {
+  font-weight: bold;
+  color: #d72e2e;
+  padding: 8px 5px;
+  margin-top: 5px;
+  border-bottom: 1px solid rgba(215, 46, 46, 0.2);
+  background-color: rgba(242, 232, 213, 0.8);
+  pointer-events: none;
+}
+
+/* Company category headers in model selection */
+select option[disabled].option-category {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  background-color: rgba(242, 232, 213, 0.9);
+  padding: 8px 5px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Language dropdown container */
+.language-select-container {
+  display: flex;
+  flex-direction: column;
+}

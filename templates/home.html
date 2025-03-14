@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Voice Assistant</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='global.css') }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
   <div class="record-player">
@@ -11,6 +12,77 @@
       <div class="center-hole"></div>
     </div>
   </div>
+  
+  <button id="options-toggle" class="options-toggle">
+    <span>Language Options</span>
+    <svg class="toggle-icon" viewBox="0 0 24 24" width="18" height="18">
+      <path d="M7,10L12,15L17,10H7Z" />
+    </svg>
+  </button>
+  
+  <div id="options-container" class="options-container" style="display: none;">
+    <div class="option-group">
+      <label for="stt-model">Speech Recognition Model:</label>
+      <select id="stt-model" class="dropdown">
+        <option value="" selected disabled>Select a model</option>
+        
+        <!-- Deepgram Models -->
+        <option value="" disabled class="option-category">Deepgram Models</option>
+        <option value="nova-3">Nova-3</option>
+        <option value="nova-2">Nova-2</option>
+        
+        <!-- OpenAI Whisper Models -->
+        <option value="" disabled class="option-category">OpenAI Whisper Models</option>
+        <option value="whisper-large">Whisper Large</option>
+        <option value="whisper-medium">Whisper Medium</option>
+        <option value="whisper-small">Whisper Small</option>
+        <option value="whisper-base">Whisper Base</option>
+        <option value="whisper-tiny">Whisper Tiny</option>
+      </select>
+    </div>
+
+    <div id="stt-language-container" class="option-group language-select-container" style="display: none;">
+      <label for="stt-language">Speech Recognition Language:</label>
+      <select id="stt-language" class="dropdown">
+        <option value="" selected disabled>Select a language</option>
+        <!-- Only include the 6 specific languages in the required order -->
+        <option value="en">English</option>
+        <option value="ta">Tamil</option>
+        <option value="kn">Kannada</option>
+        <option value="te">Telugu</option>
+        <option value="ml">Malayalam</option>
+        <option value="hi">Hindi</option>
+      </select>
+    </div>
+
+    <div class="option-group">
+      <label for="tts-model">Text-to-Speech Voice:</label>
+      <select id="tts-model" class="dropdown">
+        <option value="" selected disabled>Select a language</option>
+        <!-- English voices - keep only US English -->
+        <option value="" disabled class="option-category">English Voice</option>
+        <option value="en-US">English (US)</option>
+        
+        <!-- Indian Languages voices -->
+        <option value="" disabled class="option-category">Indian Language Voices</option>
+        <option value="hi-IN">Hindi</option>
+        <option value="ta-IN">Tamil</option>
+        <option value="kn-IN">Kannada</option>
+        <option value="te-IN">Telugu</option>
+        <option value="ml-IN">Malayalam</option>
+      </select>
+    </div>
+
+    <div class="option-group">
+      <label for="tts-gender">TTS Voice Gender:</label>
+      <select id="tts-gender" class="dropdown">
+        <option value="" selected disabled>Select a gender</option>
+        <option value="MALE">Male</option>
+        <option value="FEMALE">Female</option>
+      </select>
+    </div>
+  </div>
+
   <script src="{{ url_for('static', filename='webapp.js') }}"></script>
 </body>
 </html>
