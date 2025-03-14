@@ -25,13 +25,9 @@
       <label for="stt-model">Speech Recognition Model:</label>
       <select id="stt-model" class="dropdown">
         <option value="" selected disabled>Select a model</option>
-        
-        <!-- Deepgram Models -->
         <option value="" disabled class="option-category">Deepgram Models</option>
         <option value="nova-3">Nova-3</option>
         <option value="nova-2">Nova-2</option>
-        
-        <!-- OpenAI Whisper Models -->
         <option value="" disabled class="option-category">OpenAI Whisper Models</option>
         <option value="whisper-large">Whisper Large</option>
         <option value="whisper-medium">Whisper Medium</option>
@@ -45,7 +41,6 @@
       <label for="stt-language">Speech Recognition Language:</label>
       <select id="stt-language" class="dropdown">
         <option value="" selected disabled>Select a language</option>
-        <!-- Only include the 6 specific languages in the required order -->
         <option value="en">English</option>
         <option value="ta">Tamil</option>
         <option value="kn">Kannada</option>
@@ -59,11 +54,8 @@
       <label for="tts-model">Text-to-Speech Voice:</label>
       <select id="tts-model" class="dropdown">
         <option value="" selected disabled>Select a language</option>
-        <!-- English voices - keep only US English -->
         <option value="" disabled class="option-category">English Voice</option>
         <option value="en-US">English (US)</option>
-        
-        <!-- Indian Languages voices -->
         <option value="" disabled class="option-category">Indian Language Voices</option>
         <option value="hi-IN">Hindi</option>
         <option value="ta-IN">Tamil</option>
@@ -82,7 +74,6 @@
       </select>
     </div>
   </div>
-
   <script src="{{ url_for('static', filename='webapp.js') }}"></script>
 </body>
 </html>

@@ -1,35 +1,22 @@
-import logging
 from openai import OpenAI
 
-logging.basicConfig(level=logging.INFO)
+client = OpenAI()
 
-# Initialize OpenAI client
-try:
-    client = OpenAI()
-    logging.info("OpenAI client initialized successfully")
-except Exception as e:
-    error_msg = f"Error initializing OpenAI client: {str(e)}"
-    logging.error(error_msg)
-    client = None
-
-# Language-specific system prompts
 LANGUAGE_SYSTEM_PROMPTS = {
     'en': "You are an advanced voice assistant who asks follow-up questions before providing conclusions. The number of questions needed is entirely your decision. Speak naturally and clearly in English. IMPORTANT: Provide only plain text that can be read aloud by a text-to-speech system. Do not use special characters, symbols, markdown, or annotations. Avoid using asterisks, hashtags, brackets, or any formatting that is not meant to be read out loud.",
     'ta': "நீங்கள் முடிவுகளை வழங்கும் முன் பின்தொடர் கேள்விகளைக் கேட்கும் மேம்பட்ட குரல் உதவியாளர். தேவையான கேள்விகளின் எண்ணிக்கை முழுவதும் உங்கள் முடிவு. தமிழில் இயல்பாகவும் தெளிவாகவும் பேசுங்கள். முக்கியம்: text-to-speech மூலம் வாசிக்கப்படக்கூடிய எளிய உரையை மட்டுமே வழங்கவும். சிறப்பு எழுத்துக்கள், சின்னங்கள் அல்லது குறிப்புகளைப் பயன்படுத்த வேண்டாம். நட்சத்திரங்கள், ஹாஷ்டேக்குகள், பிறைகள், அல்லது சத்தமாக வாசிக்கப்படாத வடிவமைப்புகளைத் தவிர்க்கவும்.",
     'kn': "ನೀವು ತೀರ್ಮಾನಗಳನ್ನು ಒದಗಿಸುವ ಮೊದಲು ಅನುಸರಣೆಯ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳುವ ಸುಧಾರಿತ ಧ್ವನಿ ಸಹಾಯಕರಾಗಿದ್ದೀರಿ. ಅಗತ್ಯವಿರುವ ಪ್ರಶ್ನೆಗಳ ಸಂಖ್ಯೆಯು ಸಂಪೂರ್ಣವಾಗಿ ನಿಮ್ಮ ನಿರ್ಧಾರವಾಗಿದೆ. ಕನ್ನಡದಲ್ಲಿ ಸಹಜವಾಗಿ ಮತ್ತು ಸ್ಪಷ್ಟವಾಗಿ ಮಾತನಾಡಿ. ಮುಖ್ಯ: ಪಠ್ಯ-ಧ್ವನಿ ವ್ಯವಸ್ಥೆಯಿಂದ ಓದಬಹುದಾದ ಸರಳ ಪಠ್ಯವನ್ನು ಮಾತ್ರ ಒದಗಿಸಿ. ವಿಶೇಷ ಅಕ್ಷರಗಳು, ಸಂಕೇತಗಳು, ಅಥವಾ ಟಿಪ್ಪಣಿಗಳನ್ನು ಬಳಸಬೇಡಿ. ನಕ್ಷತ್ರಗಳು, ಹ್ಯಾಶ್‌ಟ್ಯಾಗ್‌ಗಳು, ಆವರಣಗಳು ಅಥವಾ ಜೋರಾಗಿ ಓದಲು ಉದ್ದೇಶಿಸದ ಯಾವುದೇ ಫಾರ್ಮ್ಯಾಟಿಂಗ್ ಅನ್ನು ತಪ್ಪಿಸಿ.",
-    'te': "మీరు ముగింపులను అందించడానికి ముందు ఫాలో-అప్ ప్రశ్నలను అడిగే అధునాతన వాయిస్ అసిస్టెంట్. అవసరమైన ప్రశ్నల సంఖ్య పూర్తిగా మీ నిర్ణయం. తెలుగులో సహజంగా మరియు స్పష్టంగా మాట్లాడండి. ముఖ్యమైనది: టెక్స్ట్-టు-స్పీచ్ సిస్టమ్ ద్వారా బిగ్గరగా చదవగలిగే సాధారణ టెక్స్ట్‌ని మాత്రమే అందించండి. ప్రత్యేక అక్షరాలు, చిహ్నాలు, మార్క్‌డౌన్ లేదా వ్యాఖ్యానాలను ఉపయోగించవద్దు. నక്షత్రాలు, హ్యాష్‌ట్యాగ్‌లు, బ്రాకెట్లు లేదా బిగ్గరగా చదవడానికి ఉద్దేశించని ఏదൈనా ఫార్మాటింగ്‌ని నివారించండి.",
-    'ml': "നിങ്ങൾ തീരുമാനങ്ങൾ നൽകുന്നതിന് മുമ്പ് തുടർച്ചയായ ചോദ്യങ്ങൾ ചോദിക്കുന്ന ഒരു വിദഗ്ധ വോയ്സ് അസിസ്റ്റന്റാണ്. ആവശ്യമായ ചോദ്യങ്ങളുടെ എണ്ണം പൂർണ്ണമായും നിങ്ങളുടെ തീരുമാനമാണ്. മലയാളത്തിൽ സ്വാഭാവികമായും വ്യക്തമായും സംസാരിക്കുക. പ്രധാനം: ടെക്സ്റ്റ്-ടു-സ്പീച്ച് സിസ്റ്റം ഉപയോഗിച്ച് ഉച്ചത്തിൽ വായിക്കാൻ കഴിയുന്ന സാധാരണ ടെക്സ്റ്റ് മാത്രം നൽകുക. പ്രത്യേക അക്ഷരങ്ങൾ, ചിഹ്നങ്ങൾ, മാർക്ക്ഡൗൺ അല്ലെങ്കിൽ അനോട്ടേഷനുകൾ ഉപയോഗിക്കരുത്. നക്ഷത്രങ്ങൾ, ഹാഷ്ടാഗുകൾ, ബ്രാക്കറ്റുകൾ അല്ലെങ്കിൽ ഉച്ചത്തിൽ വായിക്കാൻ ഉദ്ദേശിച്ചിട്ടില്ലാത്ത ഏതെങ്കിലും ഫോർമാറ്റിംഗ് ഒഴിവാക്കുക.",
+    'te': "మీరు ముగింపులను అందించడానికి ముందు ఫాలో-అప్ ప్రశ్నలను అడిగే అధునాతన వాయిస్ అసిస్టెంట్. అవసరమైన ప్రశ్నల సంఖ్య పూర్తిగా మీ నిర్ణయం. తెలుగులో సహజంగా మరియు స్పష్టంగా మాట్లాడండి. ముఖ్యమైనది: టెక్స్ట్-టు-స్పీచ్ సిస్టమ్ ద్వారా బిగ్గరగా చదవగలిగే సాధారణ టెక్స్ట్‌ని మాత്రమే అందించండి. ప్రత్యేక అక్షరాలు, చిహ్నాలు, మార్క్‌డౌన్ లేదా వ్యాఖ్యానాలను ఉపయోగించవద్దు. నక്షత్రాలు, హ్యాష్‌ట్యాగ్‌లు, బ్రాకెట్లు లేదా బిగ్గరగా చదవడానికి ఉద్దేశించని ఏదൈనా ఫార్మాటింగ్‌ని నివారించండి.",
+    'ml': "നിങ്ങൾ തീരുമാനങ്ങൾ നൽകുന്നതിന് മുമ്പ് തുടർച്ചയായ ചോദ്യങ്ങൾ ചോദിക്കുന്ന ഒരു വിദഗ്ധ വോയ്സ് അസിസ്റ്റന്റാണ്. ആവശ്യമായ ചോദ്യങ്ങളുടെ എണ്ണം പൂർണ്ണമായും നിങ്ങളുടെ തീരുമാനമാണ്. മലയാളത്തിൽ സ്വാഭാവികമായും വ്യക്തമായും സംസാരിക്കുക. പ്രധാനം: ടെക്സ്റ്റ്-ടു-സ്പീച്ച് സിസ്റ്റം ഉപയോഗിച്ച് ഉച്ചത്തിൽ വായിക്കാൻ കഴിയുന്ന സാധാരണ ടെക്സ്റ്റ് മാത്രം നൽകുക. പ്രത്യേക അക്ഷരങ്ങൾ, ചിഹ്നങ്ങൾ, മാർക്ക്ഡൗൺ അല്ലെങ്കിൽ അനോട്ടേഷനുകൾ ഉപയോഗിക്കരുത്. നക്ഷత്രങ്ങൾ, ഹാഷ്ടാഗുകൾ, ബ്രാക്കറ്റുകൾ അല്ലെങ്കിൽ ഉച്ചത്തിൽ വായിക്കാൻ ഉദ്ദേശിച്ചിട്ടില്ലാത്ത ഏതെങ്കിലും ഫോർമാറ്റിംഗ് ഒഴിവാക്കുക.",
     'hi': "आप एक उन्नत, मैत्रीपूर्ण वॉयस असिस्टेंट हैं जो केवल बातचीत के माध्यम से किसी भी कार्य में मदद कर सकता है।\nउपयोगकर्ता ने कहा: {transcript}\n\nआपका काम किसी भी प्रश्न या अनुरोध के लिए सहायक, सूचनात्मक प्रतिक्रियाएँ प्रदान करना है। अंतिम निष्कर्ष पर पहुंचने से पहले, उपयोगकर्ता के अनुरोध को स्पष्ट करने के लिए फॉलो-अप प्रश्न पूछें। आप तय करते हैं कि कितने प्रश्न आवश्यक हैं - यह पूरी तरह से आपके निर्णय पर निर्भर करता है कि किस जानकारी की आवश्यकता है। केवल जब आपने पर्याप्त जानकारी एकत्र कर ली हो, तभी अंतिम उत्तर प्रदान करें। आपको केवल मौखिक सहायता प्रदान करने की आवश्यकता है - बातचीत के अलावा कोई अन्य कार्रवाई आवश्यक नहीं है। हिंदी में मित्रवत चैट करने के समान अपनी प्रतिक्रियाओं को प्राकृतिक और वार्तालाप रखें।"
 }
 
-# Cross-language system prompts (translating from input language to output language)
 TRANSLATION_SYSTEM_PROMPTS = {
     'en_to_any': "You are an advanced voice assistant who understands English and translates responses into the requested language. First understand the query in English, then provide a natural, fluent response in the target language. IMPORTANT: Provide only plain text without any special characters, symbols, markdown, or annotations that could interfere with text-to-speech processing. Your response will be read aloud by a TTS system.",
     'any_to_en': "You are an advanced voice assistant who understands multiple languages and responds in English. Understand the query in the source language, then provide a natural, fluent response in English. IMPORTANT: Provide only plain text without any special characters, symbols, markdown, or annotations that could interfere with text-to-speech processing. Your response will be read aloud by a TTS system.",
     'cross_language': "You are an advanced voice assistant and translator. Understand the query in the source language, then provide a natural, fluent response in the target language. Your translations should be culturally appropriate and natural-sounding. IMPORTANT: Provide only plain text without any special characters, symbols, markdown, or annotations that could interfere with text-to-speech processing. Your response will be read aloud by a TTS system."
 }
 
-# Language full names for prompts
 LANGUAGE_NAMES = {
     'en': "English",
     'ta': "Tamil",
@@ -39,7 +26,6 @@ LANGUAGE_NAMES = {
     'hi': "Hindi"
 }
 
-# Language-specific prompt templates
 LANGUAGE_PROMPT_TEMPLATES = {
     'en': "You are an advanced, friendly voice assistant that can help with any task through conversation only.\nThe user said: {transcript}\n\nYour job is to provide helpful, informative responses to any question or request. Before arriving at a final conclusion, ask follow-up questions to clarify the user's request. You decide how many questions are necessary - this depends entirely on your judgment of what information is needed. Only when you have gathered sufficient information should you provide a final answer. You only need to provide verbal assistance - no other actions are required beyond conversation. Keep your responses natural and conversational, as if you're having a friendly chat in English. IMPORTANT: Format your response as plain text only, with no special formatting, symbols, markdown, or annotations, as your response will be processed by a text-to-speech system.",
     
@@ -54,7 +40,6 @@ LANGUAGE_PROMPT_TEMPLATES = {
     'hi': "आप एक उन्नत, मैत्रीपूर्ण वॉयस असिस्टेंट हैं जो केवल बातचीत के माध्यम से किसी भी कार्य में मदद कर सकता है।\nउपयोगकर्ता ने कहा: {transcript}\n\nआपका काम किसी भी प्रश्न या अनुरोध के लिए सहायक, सूचनात्मक प्रतिक्रियाएँ प्रदान करना है। अंतिम निष्कर्ष पर पहुंचने से पहले, उपयोगकर्ता के अनुरोध को स्पष्ट करने के लिए फॉलो-अप प्रश्न पूछें। आप तय करते हैं कि कितने प्रश्न आवश्यक हैं - यह पूरी तरह से आपके निर्णय पर निर्भर करता है कि किस जानकारी की आवश्यकता है। केवल जब आपने पर्याप्त जानकारी एकत्र कर ली हो, तभी अंतिम उत्तर प्रदान करें। आपको केवल मौखिक सहायता प्रदान करने की आवश्यकता है - बातचीत के अलावा कोई अन्य कार्रवाई आवश्यक नहीं है। हिंदी में मित्रवत चैट करने के समान अपनी प्रतिक्रियाओं को प्राकृतिक और वार्तालाप रखें।"
 }
 
-# Cross-language prompt template (for translating between languages)
 TRANSLATION_PROMPT_TEMPLATE = """You are an advanced voice assistant that understands {src_lang_name} and responds in {tgt_lang_name}.
 
 The user said in {src_lang_name}: {transcript}
@@ -76,130 +61,38 @@ IMPORTANT FORMATTING INSTRUCTIONS:
 """
 
 def voice_assistant_response(transcript, language="en", output_language=None):
-    """
-    Generate a voice assistant response based on the transcribed text,
-    with support for multiple languages and cross-language translation.
     
-    Args:
-        transcript (str): The transcribed user speech
-        language (str): Input language code - en, ta, kn, te, ml, hi
-        output_language (str, optional): Output language code. If None, same as input.
-    
-    Returns:
-        str: The AI assistant's response in the requested output language
-    """
     try:
-        # Input validation
-        if not client:
-            return "Error: OpenAI client not initialized. Check your API key."
-            
-        if not transcript or transcript.strip() == "":
-            return "Error: No transcript provided for AI response"
-            
-        # Default to input language if output language not specified
-        if output_language is None:
-            output_language = language
-            
-        logging.info(f"Generating response for input language: {language}, output language: {output_language}")
+        output_language = output_language or language
+        language = language if language in LANGUAGE_SYSTEM_PROMPTS else "en"
+        output_language = output_language if output_language in LANGUAGE_SYSTEM_PROMPTS else "en"
         
-        # Default to English if language not supported
-        if language not in LANGUAGE_SYSTEM_PROMPTS:
-            logging.warning(f"Input language '{language}' not supported for AI responses. Defaulting to English.")
-            language = "en"
-        
-        if output_language not in LANGUAGE_SYSTEM_PROMPTS:
-            logging.warning(f"Output language '{output_language}' not supported for AI responses. Defaulting to English.")
-            output_language = "en"
-        
-        # Check if we need translation (input language != output language)
         is_translation_needed = language != output_language
         
         if is_translation_needed:
-            # Using the translation prompt template
             prompt_text = TRANSLATION_PROMPT_TEMPLATE.format(
                 src_lang_name=LANGUAGE_NAMES.get(language, "English"),
                 tgt_lang_name=LANGUAGE_NAMES.get(output_language, "English"),
                 transcript=transcript
             )
             
-            # Select appropriate system prompt for cross-language scenario
-            if language == 'en':
-                system_prompt = TRANSLATION_SYSTEM_PROMPTS['en_to_any']
-            elif output_language == 'en':
-                system_prompt = TRANSLATION_SYSTEM_PROMPTS['any_to_en']
-            else:
-                system_prompt = TRANSLATION_SYSTEM_PROMPTS['cross_language']
+            system_prompt_key = 'en_to_any' if language == 'en' else ('any_to_en' if output_language == 'en' else 'cross_language')
+            system_prompt = TRANSLATION_SYSTEM_PROMPTS[system_prompt_key]
         else:
-            # Same language input and output - use standard prompt
-            prompt_text = LANGUAGE_PROMPT_TEMPLATES.get(language, LANGUAGE_PROMPT_TEMPLATES["en"])
-            prompt_text = prompt_text.format(transcript=transcript)
-            
-            # Get language-specific system prompt
+            prompt_text = LANGUAGE_PROMPT_TEMPLATES.get(language, LANGUAGE_PROMPT_TEMPLATES["en"]).format(transcript=transcript)
             system_prompt = LANGUAGE_SYSTEM_PROMPTS.get(language, LANGUAGE_SYSTEM_PROMPTS["en"])
         
-        try:
-            logging.info(f"Calling OpenAI API for language processing: {language} -> {output_language}")
-            
-            # Check if the model exists and is available
-            model_to_use = "gpt-4o-mini-2024-07-18"
-            
-            response = client.chat.completions.create(
-                model=model_to_use,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": system_prompt
-                    },
-                    {"role": "user", "content": prompt_text}
-                ],
-                temperature=0.3,
-                max_tokens=1500
-            )
-            
-            if not response or not response.choices or len(response.choices) == 0:
-                return "Error: No response generated from AI model"
-                
-            ai_response = response.choices[0].message.content.strip()
-            
-            if not ai_response:
-                return "Error: Empty response from AI model"
-                
-            # Log successful response generation    
-            logging.info(f"Successfully generated AI response in {output_language}")
-            
-            return ai_response
+        response = client.chat.completions.create(
+            model="gpt-4o-mini-2024-07-18",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": prompt_text}
+            ],
+            temperature=0.3,
+            max_tokens=1500
+        )
         
-        except Exception as e:
-            error_msg = f"Error calling OpenAI API: {str(e)}"
-            logging.error(error_msg)
-            return f"Error: {error_msg}"
-    
-    except Exception as e:
-        error_msg = f"Error generating voice assistant response: {str(e)}"
-        logging.error(error_msg)
+        return response.choices[0].message.content.strip()
         
-        # Special handling for common errors
-        if "Rate limit" in str(e):
-            return "Error: OpenAI API rate limit exceeded. Please try again in a moment."
-            
-        if "maximum context length" in str(e):
-            return "Error: Input text is too long for processing."
-            
-        if "invalid API key" in str(e) or "API key not found" in str(e):
-            return "Error: OpenAI API authentication issue. Please check your API key."
-        
-        # Return error message in the requested output language
-        error_messages = {
-            "en": "Sorry, I'm having trouble processing your request right now.",
-            "ta": "மன்னிக்கவும், உங்கள் கோரிக்கையை செயலாக்குவதில் எனக்கு சிக்கல் உள்ளது.",
-            "kn": "ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ವಿನಂತಿಯನ್ನು ಈಗ ಪ್ರಕ್ರಿಯೆಗೊಳಿಸಲು ನನಗೆ ತೊಂದರೆಯಾಗುತ್ತಿದೆ.",
-            "te": "క్షమించండి, మీ అభ్యర్థనను ప్రాసెస్ చేయడంలో నాకు ఇప్పుడు సమస్య ఉంది.",
-            "ml": "ക്ഷമിക്കണം, നിങ്ങളുടെ അഭ്യർത്ഥന പ്രോസസ്സ് ചെയ്യുന്നതിൽ എനിക്ക് ഇപ്പോൾ ബുദ്ധിമുട്ടുണ്ട്.",
-            "hi": "क्षमा करें, मुझे अभी आपके अनुरोध को संसाधित करने में परेशानी हो रही है।"
-        }
-        return error_messages.get(output_language, error_messages["en"])
-    
-    except Exception as outer_e:
-        # Catch-all for any unexpected errors
-        logging.error(f"Unexpected error in voice_assistant_response: {str(outer_e)}")
-        return "An unexpected error occurred while processing your request."
+    except Exception:
+        return "Error: Request processing failed"
