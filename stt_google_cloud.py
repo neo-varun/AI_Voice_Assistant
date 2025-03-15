@@ -17,7 +17,6 @@ def google_cloud_transcribe(audio_data, language="en"):
     try:
 
         google_language = LANGUAGE_MAPPING.get(language, 'en-IN')
-        
         if hasattr(audio_data, 'seek'):
             audio_data.seek(0)
             audio_bytes = audio_data.getvalue() if isinstance(audio_data, io.BytesIO) else audio_data
@@ -25,9 +24,10 @@ def google_cloud_transcribe(audio_data, language="en"):
             audio_bytes = audio_data
         
         config = speech.RecognitionConfig(
-            encoding=speech.RecognitionConfig.AudioEncoding.OGG_OPUS,
+            encoding=speech.RecognitionConfig.AudioEncoding.WEBM_OPUS,
             language_code=google_language,
             enable_automatic_punctuation=True,
+            sample_rate_hertz=48000,
         )
         
         response = speech_client.recognize(

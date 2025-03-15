@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const ttsGender = document.getElementById('tts-gender');
   
   // Model definitions
-  const whisperModels = ['whisper-large', 'whisper-medium', 'whisper-small', 'whisper-base', 'whisper-tiny'];
   const googleCloudModels = ['google_cloud-default'];
   
   // Recording variables
@@ -35,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   sttModel.addEventListener('change', () => {
     const modelSelection = sttModel.value;
-    const showLanguageDropdown = whisperModels.includes(modelSelection) || googleCloudModels.includes(modelSelection);
+    const showLanguageDropdown = googleCloudModels.includes(modelSelection);
     sttLanguageContainer.style.display = showLanguageDropdown ? 'flex' : 'none';
     
     if (!showLanguageDropdown && sttLanguage) {
@@ -54,7 +53,6 @@ document.addEventListener("DOMContentLoaded", () => {
         bigCircle.classList.remove("recording");
       }
     } else if (sttModel.value && ttsModel.value && ttsGender.value && 
-              (!whisperModels.includes(sttModel.value) || sttLanguage.value) && 
               (!googleCloudModels.includes(sttModel.value) || sttLanguage.value)) {
       startRecording();
     } else {

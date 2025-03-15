@@ -31,8 +31,6 @@ def voice_agent():
         
         if stt_provider == 'google_cloud':
             transcription = google_cloud_transcribe(audio_data, language=stt_language)
-        elif stt_provider == 'whisper':
-            return jsonify({'error': f"Whisper models ({stt_model}) are not yet implemented"}), 500
         else:
             transcription = deepgram_transcribe(audio_data, model=stt_model, language='en')
             
