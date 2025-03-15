@@ -13,7 +13,7 @@ LANGUAGE_MAPPING = {
 }
 
 def deepgram_transcribe(audio_data, model="nova-2", language="en"):
-    
+
     try:
         deepgram_language = 'en-US' if model.startswith('nova-') else LANGUAGE_MAPPING.get(language, 'en-US')
         
@@ -32,7 +32,7 @@ def deepgram_transcribe(audio_data, model="nova-2", language="en"):
         payload = {'buffer': audio_bytes}
         response = deepgram.listen.rest.v("1").transcribe_file(payload, options)
         
-        return response.results.channels[0].alternatives[0].transcript or "Error: Empty transcript returned"
-            
+        return response.results.channels[0].alternatives[0].transcript
+    
     except Exception as e:
-        return f"Error: Transcription failed: {str(e)}"
+        return f"Error: Deepgram transcription failed: {str(e)}"

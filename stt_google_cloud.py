@@ -15,8 +15,8 @@ LANGUAGE_MAPPING = {
 def google_cloud_transcribe(audio_data, language="en"):
     
     try:
-
         google_language = LANGUAGE_MAPPING.get(language, 'en-IN')
+        
         if hasattr(audio_data, 'seek'):
             audio_data.seek(0)
             audio_bytes = audio_data.getvalue() if isinstance(audio_data, io.BytesIO) else audio_data
@@ -38,7 +38,7 @@ def google_cloud_transcribe(audio_data, language="en"):
         transcripts = [result.alternatives[0].transcript for result in response.results]
         full_transcript = " ".join(transcripts)
         
-        return full_transcript if full_transcript else "Error: Empty transcript returned"
-            
+        return full_transcript
+    
     except Exception as e:
-        return f"Error: Transcription failed: {str(e)}" 
+        return f"Error: Google Cloud transcription failed: {str(e)}" 

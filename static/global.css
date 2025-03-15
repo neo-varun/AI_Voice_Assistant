@@ -223,6 +223,17 @@ body {
   font-style: italic;
 }
 
+.dropdown option[disabled].option-category {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #555;
+  background-color: rgba(242, 232, 213, 0.9);
+  padding: 8px 5px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .option-category {
   font-weight: bold;
   color: #d72e2e;

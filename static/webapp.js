@@ -1,5 +1,5 @@
 document.addEventListener("DOMContentLoaded", () => {
-  // Basic UI elements
+  
   const bigCircle = document.getElementById("bigCircle");
   const optionsToggle = document.getElementById('options-toggle');
   const optionsContainer = document.getElementById('options-container');
@@ -9,16 +9,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const ttsModel = document.getElementById('tts-model');
   const ttsGender = document.getElementById('tts-gender');
   
-  // Model definitions
-  const googleCloudModels = ['google_cloud-default'];
+  const supportLanguageSelectionModels = [
+    'google_cloud-default', 
+    'assemblyai-best', 
+    'assemblyai-nano'
+  ];
   
-  // Recording variables
   let recording = false;
   let mediaRecorder;
   let audioChunks = [];
   let stream;
 
-  // Setup event listeners
   bigCircle.addEventListener("click", toggleVoiceRecording);
   
   optionsToggle.addEventListener('click', () => {
@@ -34,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
   
   sttModel.addEventListener('change', () => {
     const modelSelection = sttModel.value;
-    const showLanguageDropdown = googleCloudModels.includes(modelSelection);
+    const showLanguageDropdown = supportLanguageSelectionModels.includes(modelSelection);
     sttLanguageContainer.style.display = showLanguageDropdown ? 'flex' : 'none';
     
     if (!showLanguageDropdown && sttLanguage) {
@@ -42,7 +43,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
   
-  // Initialize language dropdown
   sttLanguageContainer.style.display = 'none';
   
   function toggleVoiceRecording() {
@@ -53,29 +53,24 @@ document.addEventListener("DOMContentLoaded", () => {
         bigCircle.classList.remove("recording");
       }
     } else if (sttModel.value && ttsModel.value && ttsGender.value && 
-              (!googleCloudModels.includes(sttModel.value) || sttLanguage.value)) {
+              (!supportLanguageSelectionModels.includes(sttModel.value) || sttLanguage.value)) {
       startRecording();
-    } else {
-      alert("Please select all required options");
     }
   }
 
   function startRecording() {
-    bigCircle.classList.add("recording");
-    
-    navigator.mediaDevices.getUserMedia({audio: true})
-      .then(audioStream => {
-        stream = audioStream;
-        
-        const options = { mimeType: 'audio/webm', audioBitsPerSecond: 128000 };
-        
-        mediaRecorder = new MediaRecorder(stream, options);
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(function(streamData) {
+        stream = streamData;
+        mediaRecorder = new MediaRecorder(stream);
         audioChunks = [];
-        recording = true;
-
-        mediaRecorder.addEventListener("dataavailable", e => audioChunks.push(e.data));
+        
+        mediaRecorder.addEventListener("dataavailable", event => {
+          audioChunks.push(event.data);
+        });
+        
         mediaRecorder.addEventListener("stop", () => {
-          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+          const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
           sendToServer(audioBlob);
           
           if (stream) {
@@ -83,14 +78,12 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         });
         
-        mediaRecorder.start(250);
-      })
-      .catch(() => {
-        alert("Microphone access denied");
-        bigCircle.classList.remove("recording");
+        mediaRecorder.start();
+        recording = true;
+        bigCircle.classList.add("recording");
       });
   }
-
+  
   function sendToServer(audioBlob) {
     const formData = new FormData();
     const [provider, model] = sttModel.value.split('-');
@@ -106,12 +99,9 @@ document.addEventListener("DOMContentLoaded", () => {
       method: "POST",
       body: formData
     })
-    .then(response => response.ok ? response.json() : Promise.reject())
+    .then(response => response.json())
     .then(data => {
-      if (!data.error) {
-        new Audio("data:audio/mp3;base64," + data.tts_audio).play();
-      }
-    })
-    .catch(() => {});
+      new Audio("data:audio/mp3;base64," + data.tts_audio).play();
+    });
   }
 });

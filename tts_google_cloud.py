@@ -41,6 +41,6 @@ def text_to_speech(text, language_code="en-US", gender="MALE"):
         )
         
         return base64.b64encode(response.audio_content).decode('utf-8')
-        
+    
     except Exception as e:
-        return f"Error: {str(e)}"
+        return f"Error: Text-to-speech conversion failed: {str(e)}"
