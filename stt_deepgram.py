@@ -12,7 +12,7 @@ LANGUAGE_MAPPING = {
     'hi': 'hi',       # Hindi
 }
 
-def transcribe_audio(audio_data, model="nova-2", language="en"):
+def deepgram_transcribe(audio_data, model="nova-2", language="en"):
     
     try:
         deepgram_language = 'en-US' if model.startswith('nova-') else LANGUAGE_MAPPING.get(language, 'en-US')

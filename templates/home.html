@@ -26,18 +26,20 @@
       <select id="stt-model" class="dropdown">
         <option value="" selected disabled>Select a model</option>
         <option value="" disabled class="option-category">Deepgram Models</option>
-        <option value="nova-3">Nova-3</option>
-        <option value="nova-2">Nova-2</option>
+        <option value="deepgram-nova-3">Nova-3</option>
+        <option value="deepgram-nova-2">Nova-2</option>
+        <option value="" disabled class="option-category">Google Cloud Model</option>
+        <option value="google_cloud-default">Cloud Speech-to-Text</option>
         <option value="" disabled class="option-category">OpenAI Whisper Models</option>
-        <option value="whisper-large">Whisper Large</option>
-        <option value="whisper-medium">Whisper Medium</option>
-        <option value="whisper-small">Whisper Small</option>
-        <option value="whisper-base">Whisper Base</option>
-        <option value="whisper-tiny">Whisper Tiny</option>
+        <option value="whisper-large">Whisper-Large</option>
+        <option value="whisper-medium">Whisper-Medium</option>
+        <option value="whisper-small">Whisper-Small</option>
+        <option value="whisper-base">Whisper-Base</option>
+        <option value="whisper-tiny">Whisper-Tiny</option>
       </select>
     </div>
 
-    <div id="stt-language-container" class="option-group language-select-container" style="display: none;">
+    <div id="stt-language-container" class="option-group language-select-container">
       <label for="stt-language">Speech Recognition Language:</label>
       <select id="stt-language" class="dropdown">
         <option value="" selected disabled>Select a language</option>

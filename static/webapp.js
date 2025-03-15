@@ -1,208 +1,119 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const bigCircleElement = document.querySelector(".big-circle") || document.getElementById("bigCircle");
-  
-  if (bigCircleElement) {
-    bigCircleElement.addEventListener("click", toggleVoiceRecording);
-  }
-
+  // Basic UI elements
+  const bigCircle = document.getElementById("bigCircle");
   const optionsToggle = document.getElementById('options-toggle');
   const optionsContainer = document.getElementById('options-container');
-  
-  if (optionsToggle && optionsContainer) {
-    optionsToggle.addEventListener('click', () => {
-      optionsToggle.classList.toggle('active');
-      const isHidden = optionsContainer.style.display === 'none';
-      
-      optionsContainer.style.display = isHidden ? 'flex' : 'none';
-      
-      if (isHidden) {
-        setTimeout(() => optionsContainer.classList.add('visible'), 10);
-      } else {
-        optionsContainer.classList.remove('visible');
-      }
-    });
-  }
-
-  const whisperModels = [
-    'whisper-large', 'whisper-medium', 'whisper-small', 'whisper-base', 'whisper-tiny'
-  ];
-  
-  const sttModelSelect = document.getElementById('stt-model');
+  const sttModel = document.getElementById('stt-model');
   const sttLanguageContainer = document.getElementById('stt-language-container');
-  const sttLanguageSelect = document.getElementById('stt-language');
-  const ttsModelSelect = document.getElementById('tts-model');
-  const ttsGenderSelect = document.getElementById('tts-gender');
+  const sttLanguage = document.getElementById('stt-language');
+  const ttsModel = document.getElementById('tts-model');
+  const ttsGender = document.getElementById('tts-gender');
   
-  sttModelSelect.selectedIndex = 0;
-  if (sttLanguageSelect) sttLanguageSelect.selectedIndex = 0;
-  ttsModelSelect.selectedIndex = 0;
-  ttsGenderSelect.selectedIndex = 0;
+  // Model definitions
+  const whisperModels = ['whisper-large', 'whisper-medium', 'whisper-small', 'whisper-base', 'whisper-tiny'];
+  const googleCloudModels = ['google_cloud-default'];
   
-  const languageMapping = {
-    'en': 'en-US', 'ta': 'ta-IN', 'kn': 'kn-IN', 
-    'te': 'te-IN', 'ml': 'ml-IN', 'hi': 'hi-IN'
-  };
-  
-  function toggleLanguageDropdown() {
-    const isWhisperModel = whisperModels.includes(sttModelSelect.value);
-    sttLanguageContainer.style.display = isWhisperModel ? 'flex' : 'none';
-    if (isWhisperModel) sttLanguageSelect.selectedIndex = 0;
-  }
-  
-  function updateTTSLanguage(languageCode) {
-    if (!languageCode || ttsModelSelect.selectedIndex !== 0) return;
-    
-    const ttsLanguage = languageMapping[languageCode] || 'en-US';
-    
-    Array.from(ttsModelSelect.options).forEach((option, idx) => {
-      if (option.value === ttsLanguage) ttsModelSelect.selectedIndex = idx;
-    });
-  }
-  
-  if (sttLanguageSelect) {
-    sttLanguageSelect.addEventListener('change', (e) => updateTTSLanguage(e.target.value));
-  }
-  
-  toggleLanguageDropdown();
-  sttModelSelect.addEventListener('change', toggleLanguageDropdown);
-
+  // Recording variables
   let recording = false;
   let mediaRecorder;
   let audioChunks = [];
   let stream;
 
+  // Setup event listeners
+  bigCircle.addEventListener("click", toggleVoiceRecording);
+  
+  optionsToggle.addEventListener('click', () => {
+    optionsToggle.classList.toggle('active');
+    optionsContainer.style.display = optionsContainer.style.display === 'none' ? 'flex' : 'none';
+    
+    if (optionsContainer.style.display === 'flex') {
+      setTimeout(() => optionsContainer.classList.add('visible'), 10);
+    } else {
+      optionsContainer.classList.remove('visible');
+    }
+  });
+  
+  sttModel.addEventListener('change', () => {
+    const modelSelection = sttModel.value;
+    const showLanguageDropdown = whisperModels.includes(modelSelection) || googleCloudModels.includes(modelSelection);
+    sttLanguageContainer.style.display = showLanguageDropdown ? 'flex' : 'none';
+    
+    if (!showLanguageDropdown && sttLanguage) {
+      sttLanguage.value = 'en';
+    }
+  });
+  
+  // Initialize language dropdown
+  sttLanguageContainer.style.display = 'none';
+  
   function toggleVoiceRecording() {
     if (recording) {
-      stopRecording();
-    } else if (validateOptionSelections()) {
+      if (mediaRecorder && mediaRecorder.state !== "inactive") {
+        recording = false;
+        mediaRecorder.stop();
+        bigCircle.classList.remove("recording");
+      }
+    } else if (sttModel.value && ttsModel.value && ttsGender.value && 
+              (!whisperModels.includes(sttModel.value) || sttLanguage.value) && 
+              (!googleCloudModels.includes(sttModel.value) || sttLanguage.value)) {
       startRecording();
+    } else {
+      alert("Please select all required options");
     }
-  }
-  
-  function validateOptionSelections() {
-    const sttModel = sttModelSelect.value;
-    const needsLanguage = whisperModels.includes(sttModel) && !document.getElementById("stt-language").value;
-    
-    if (!sttModel || !ttsModelSelect.value || !ttsGenderSelect.value) {
-      alert("Please select all required options before recording");
-      return false;
-    }
-    
-    if (needsLanguage) {
-      alert("Please select a speech recognition language before recording");
-      return false;
-    }
-    
-    return true;
   }
 
   function startRecording() {
-    if (bigCircleElement) bigCircleElement.classList.add("recording");
-    
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      alert("Your browser doesn't support audio recording. Please try a modern browser like Chrome or Firefox.");
-      resetCircleAppearance();
-      return;
-    }
+    bigCircle.classList.add("recording");
     
     navigator.mediaDevices.getUserMedia({audio: true})
       .then(audioStream => {
         stream = audioStream;
         
-        let options;
-        const preferredFormats = [
-          'audio/webm;codecs=opus', 'audio/webm', 'audio/mp3', 'audio/wav'
-        ];
+        const options = { mimeType: 'audio/webm', audioBitsPerSecond: 128000 };
         
-        for (const format of preferredFormats) {
-          if (MediaRecorder.isTypeSupported(format)) {
-            options = { mimeType: format, audioBitsPerSecond: 128000 };
-            break;
-          }
-        }
-        
-        try {
-          mediaRecorder = new MediaRecorder(stream, options);
-        } catch (e) {
-          mediaRecorder = new MediaRecorder(stream);
-        }
-        
+        mediaRecorder = new MediaRecorder(stream, options);
         audioChunks = [];
         recording = true;
 
-        mediaRecorder.addEventListener("dataavailable", event => {
-          audioChunks.push(event.data);
-        });
-
+        mediaRecorder.addEventListener("dataavailable", e => audioChunks.push(e.data));
         mediaRecorder.addEventListener("stop", () => {
-          if (audioChunks.length === 0 || (audioChunks.length === 1 && audioChunks[0].size < 100)) {
-            alert("No audio was captured. Please try speaking louder or check your microphone.");
-            resetCircleAppearance();
-            return;
-          }
-          
-          const blobMimeType = mediaRecorder.mimeType || "audio/webm";
-          const audioBlob = new Blob(audioChunks, { type: blobMimeType });
-          
-          sendVoiceToServer(audioBlob);
+          const audioBlob = new Blob(audioChunks, { type: mediaRecorder.mimeType || "audio/webm" });
+          sendToServer(audioBlob);
           
           if (stream) {
             stream.getTracks().forEach(track => track.stop());
           }
         });
-
+        
         mediaRecorder.start(250);
       })
       .catch(() => {
-        alert("Unable to access your microphone. Please check your browser permissions and try again.");
-        resetCircleAppearance();
+        alert("Microphone access denied");
+        bigCircle.classList.remove("recording");
       });
   }
 
-  function stopRecording() {
-    if (mediaRecorder && mediaRecorder.state !== "inactive") {
-      recording = false;
-      mediaRecorder.stop();
-      resetCircleAppearance();
-    }
-  }
-
-  function resetCircleAppearance() {
-    if (bigCircleElement) {
-      bigCircleElement.classList.remove("recording");
-    }
-  }
-
-  function sendVoiceToServer(audioBlob) {
+  function sendToServer(audioBlob) {
     const formData = new FormData();
-    const sttModel = sttModelSelect.value;
+    const [provider, model] = sttModel.value.split('-');
     
-    let fileExtension = "webm";
-    if (audioBlob.type.includes("mp3")) fileExtension = "mp3";
-    else if (audioBlob.type.includes("wav")) fileExtension = "wav";
-    
-    formData.append("audio", audioBlob, `recording.${fileExtension}`);
-    formData.append("stt_language", whisperModels.includes(sttModel) 
-      ? document.getElementById("stt-language").value 
-      : "en"
-    );
-    formData.append("stt_model", sttModel);
-    formData.append("tts_model", ttsModelSelect.value);
-    formData.append("tts_gender", ttsGenderSelect.value);
+    formData.append("audio", audioBlob, "recording.webm");
+    formData.append("stt_provider", provider);
+    formData.append("stt_model", model);
+    formData.append("stt_language", provider === 'deepgram' ? "en" : sttLanguage.value);
+    formData.append("tts_model", ttsModel.value);
+    formData.append("tts_gender", ttsGender.value);
     
     fetch("/voice_agent", {
       method: "POST",
       body: formData
     })
-    .then(response => response.ok ? response.json() : Promise.reject(`Server error: ${response.status}`))
-    .then(data => data.error ? alert("Error: " + data.error) : playAudio(data.tts_audio))
-    .catch(() => alert("Error communicating with the server. Please try again."));
-  }
-
-  function playAudio(base64Audio) {
-    const audio = new Audio("data:audio/mp3;base64," + base64Audio);
-    audio.play().catch(() => {
-      alert("Error playing the response audio.");
-    });
+    .then(response => response.ok ? response.json() : Promise.reject())
+    .then(data => {
+      if (!data.error) {
+        new Audio("data:audio/mp3;base64," + data.tts_audio).play();
+      }
+    })
+    .catch(() => {});
   }
 });
