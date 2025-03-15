@@ -8,6 +8,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const sttLanguage = document.getElementById('stt-language');
   const ttsModel = document.getElementById('tts-model');
   const ttsGender = document.getElementById('tts-gender');
+  const errorMessage = document.getElementById('errorMessage');
+  const centerCircle = document.querySelector('.center-circle');
   
   const supportLanguageSelectionModels = [
     'google_cloud-default', 
@@ -19,6 +21,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let mediaRecorder;
   let audioChunks = [];
   let stream;
+  let errorTimeout;
+  let currentRotation = 0;
+  let animationFrame;
+  let lastTimestamp = 0;
+  let currentAudio = null;
 
   bigCircle.addEventListener("click", toggleVoiceRecording);
   
@@ -34,8 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   
   sttModel.addEventListener('change', () => {
-    const modelSelection = sttModel.value;
-    const showLanguageDropdown = supportLanguageSelectionModels.includes(modelSelection);
+    const showLanguageDropdown = supportLanguageSelectionModels.includes(sttModel.value);
     sttLanguageContainer.style.display = showLanguageDropdown ? 'flex' : 'none';
     
     if (!showLanguageDropdown && sttLanguage) {
@@ -45,16 +51,60 @@ document.addEventListener("DOMContentLoaded", () => {
   
   sttLanguageContainer.style.display = 'none';
   
+  function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.classList.add('show');
+    
+    if (errorTimeout) clearTimeout(errorTimeout);
+    errorTimeout = setTimeout(() => errorMessage.classList.remove('show'), 3000);
+  }
+  
+  function updateRotation(timestamp) {
+    if (!lastTimestamp) lastTimestamp = timestamp;
+    const elapsed = timestamp - lastTimestamp;
+    
+    currentRotation += (elapsed / 1000) * 45;
+    if (currentRotation >= 360) currentRotation -= 360;
+    
+    centerCircle.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg)`;
+    
+    lastTimestamp = timestamp;
+    
+    if (recording) {
+      animationFrame = requestAnimationFrame(updateRotation);
+    }
+  }
+  
+  function stopAudioPlayback() {
+    if (currentAudio) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio = null;
+      return true;
+    }
+    return false;
+  }
+  
   function toggleVoiceRecording() {
+    const wasPlayingAudio = stopAudioPlayback();
+    
     if (recording) {
       if (mediaRecorder && mediaRecorder.state !== "inactive") {
         recording = false;
         mediaRecorder.stop();
+        
+        if (animationFrame) {
+          cancelAnimationFrame(animationFrame);
+          animationFrame = null;
+        }
+        
         bigCircle.classList.remove("recording");
       }
-    } else if (sttModel.value && ttsModel.value && ttsGender.value && 
-              (!supportLanguageSelectionModels.includes(sttModel.value) || sttLanguage.value)) {
+    } else if (wasPlayingAudio || (sttModel.value && ttsModel.value && ttsGender.value && 
+              (!supportLanguageSelectionModels.includes(sttModel.value) || sttLanguage.value))) {
       startRecording();
+    } else {
+      showError("Please select language options before recording");
     }
   }
 
@@ -81,6 +131,9 @@ document.addEventListener("DOMContentLoaded", () => {
         mediaRecorder.start();
         recording = true;
         bigCircle.classList.add("recording");
+        
+        lastTimestamp = 0;
+        animationFrame = requestAnimationFrame(updateRotation);
       });
   }
   
@@ -101,7 +154,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
     .then(response => response.json())
     .then(data => {
-      new Audio("data:audio/mp3;base64," + data.tts_audio).play();
+      currentAudio = new Audio("data:audio/mp3;base64," + data.tts_audio);
+      currentAudio.addEventListener('ended', () => currentAudio = null);
+      currentAudio.play();
     });
   }
 });

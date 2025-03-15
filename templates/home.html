@@ -7,9 +7,13 @@
   <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}">
 </head>
 <body>
+  <div class="error-message" id="errorMessage">Please select language options before recording</div>
+  
   <div class="record-player">
     <div id="bigCircle" class="big-circle">
-      <div class="center-hole"></div>
+      <div class="center-circle">
+        <span class="record-icon">🎤</span>
+      </div>
     </div>
   </div>
   

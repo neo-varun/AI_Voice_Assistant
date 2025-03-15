@@ -59,6 +59,6 @@ def voice_assistant_response(transcript, language="en", output_language=None):
         )
         
         return response.choices[0].message.content.strip()
-    
+        
     except Exception as e:
         return f"Error: AI response generation failed: {str(e)}"

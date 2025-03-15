@@ -34,6 +34,10 @@ body {
   z-index: 1;
 }
 
+.big-circle:hover {
+  transform: scale(1.05);
+}
+
 .big-circle::before {
   content: "";
   position: absolute;
@@ -62,31 +66,62 @@ body {
   z-index: 2;
 }
 
-.big-circle .center-hole {
+.center-circle {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 8px;
-  height: 8px;
-  background-color: white;
-  border-radius: 50%;
+  width: 80px;
+  height: 80px;
   transform: translate(-50%, -50%);
-  z-index: 4;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 3;
+  pointer-events: none;
+  border-radius: 50%;
+  transition: none;
 }
 
-.big-circle:hover {
-  transform: scale(1.05);
-}
-
-@keyframes rotateExpanded {
-  from { transform: scale(1.05) rotate(0deg); }
-  to { transform: scale(1.05) rotate(360deg); }
+.record-icon {
+  color: #1e88e5;
+  font-size: 36px;
+  line-height: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .recording {
   transform: scale(1.05) !important;
   animation: rotateExpanded 8s linear infinite !important;
   box-shadow: 0 0 20px 5px rgba(76, 175, 80, 0.7) !important;
+}
+
+.error-message {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(220, 53, 69, 0.9);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  max-width: 90%;
+  text-align: center;
+  z-index: 1000;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s, transform 0.3s;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.error-message.show {
+  opacity: 1;
+  transform: translate(-50%, 0);
 }
 
 .options-toggle {
@@ -253,4 +288,14 @@ select option[disabled].option-category {
   padding: 8px 5px;
   font-weight: 700;
   text-align: center;
+}
+
+@keyframes rotateExpanded {
+  from { transform: scale(1.05) rotate(0deg); }
+  to { transform: scale(1.05) rotate(360deg); }
+}
+
+@keyframes rotate {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
