@@ -4,13 +4,10 @@ client = OpenAI()
 
 def summarize_exchange(exchange):
     messages = [
-        {"role": "system", "content": """You are a conversation summarizer.
-         Create a VERY BRIEF summary of this single exchange in exactly TWO SHORT LINES:
-         Line 1: Summarize what the user said or asked
-         Line 2: Summarize how the assistant responded
-         Keep each line under 15 words and focus on the core points only.
-         """},
-        {"role": "user", "content": "Please summarize this exchange in two lines:"}
+        {"role": "system", "content": """Summarize this exchange in exactly TWO lines:
+         Line 1: What the user said/asked (under 15 words)
+         Line 2: How the assistant responded (under 15 words)"""},
+        {"role": "user", "content": "Summarize:"}
     ]
     
     messages.extend(exchange)
@@ -65,7 +62,7 @@ class ConversationManager:
         if summaries:
             context.append({
                 "role": "system", 
-                "content": "Below are summaries of previous exchanges followed by the most recent messages. Continue the conversation based on this context."
+                "content": "Previous exchanges summarized below. Continue based on these and recent messages."
             })
             context.extend(summaries)
         
