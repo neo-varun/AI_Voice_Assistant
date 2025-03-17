@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let animationFrame;
   let lastTimestamp = 0;
   let currentAudio = null;
+  let sessionId = null;
 
   bigCircle.addEventListener("click", toggleVoiceRecording);
   
@@ -148,12 +149,20 @@ document.addEventListener("DOMContentLoaded", () => {
     formData.append("tts_model", ttsModel.value);
     formData.append("tts_gender", ttsGender.value);
     
+    if (sessionId) {
+      formData.append("session_id", sessionId);
+    }
+    
     fetch("/voice_agent", {
       method: "POST",
       body: formData
     })
     .then(response => response.json())
     .then(data => {
+      if (data.session_id) {
+        sessionId = data.session_id;
+      }
+      
       currentAudio = new Audio("data:audio/mp3;base64," + data.tts_audio);
       currentAudio.addEventListener('ended', () => currentAudio = null);
       currentAudio.play();
