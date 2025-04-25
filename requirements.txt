@@ -1,0 +1,7 @@
+flask
+openai
+google-cloud-speech
+assemblyai
+deepgram-sdk
+google-cloud-texttospeech
+python-dotenv
